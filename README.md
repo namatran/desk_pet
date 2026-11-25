@@ -8,6 +8,16 @@ Built on an Arduino Nano with a rotary encoder, an RGB LED and a buzzer.
 
 **Try it without hardware:** [`model/index.html`](model/index.html) is an interactive model of the pet that runs the same logic as the sketch. Download it with the `images` folder and open it in a browser. You can turn and press the knob, speed up time to 60×, and hear the beeps.
 
+## 3D models
+
+Interactive 3D pages you can spin and zoom. Download a file and open it in a browser; it loads three.js from a CDN, so it needs an internet connection.
+
+| File | What it shows |
+|---|---|
+| [`3d/breadboard.html`](3d/breadboard.html) | The full circuit on an 830-point breadboard, built step by step with every hole named (like `b16`). The LCD stands upright in row j. |
+| [`3d/breadboard-front-lcd.html`](3d/breadboard-front-lcd.html) | A second layout with the LCD lying flat in row a and hanging off the front edge, so it faces you. The back rails carry power for the screen. |
+| [`3d/enclosure.html`](3d/enclosure.html) | A concept 3D-printed shell with a tilted face, knob, LED and speaker grille. You can change the PLA color and look inside. These are rough sizes, not a print file. |
+
 ## Features
 
 - Focus timer you set with a knob (1–60 minutes, 25 by default)
