@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desk Pet Breadboard, Front LCD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly lab bench, precise about every hole
+   IDEA: an assembly manual you can spin, one wire at a time
+   PICTURE: the live 3D breadboard with Nano, LCD, pot, buzzer and modules
+   COLOUR and TYPE: warm desk ground, white board, real jumper colours; Nunito
+   LAYOUT: model left, step list right; stacks on phones */
+:root{color-scheme:light dark;--bg:light-dark(#f3efe8,#16171a);--ink:light-dark(#1f2126,#ecebe7);--mute:light-dark(#62656d,#a3a5ab);--card:light-dark(#fffdf9,#1f2126);--line:light-dark(#e2ddd4,#2e3036);--acc:#ff7a59}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Nunito,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(18px,3vw,36px) max(4vw,14px);max-width:1320px;margin:0 auto}
+h1{font-size:clamp(30px,4.5vw,44px);line-height:1.05;margin:0 0 6px;font-weight:800;text-wrap:balance}
+.sub{color:var(--mute);margin:0;max-width:70ch}
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;margin-top:18px}
+@media(max-width:900px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:clamp(380px,68vh,680px);border-radius:18px;background:radial-gradient(120% 90% at 50% 15%,light-dark(#fff,#2a2c31),light-dark(#e6e0d6,#131417));overflow:hidden;touch-action:none}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.hint{position:absolute;left:14px;bottom:10px;font-size:13px;color:var(--mute);pointer-events:none}
+.now{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:clamp(380px,68vh,680px)}
+@media(max-width:900px){.now{max-height:none}}
+.count{font-size:13px;color:var(--mute)}
+.title{font-size:22px;font-weight:800;line-height:1.15;margin:2px 0 0}
+.detail{margin:0;color:var(--ink)}
+.nav{display:flex;gap:8px;flex-wrap:wrap}
+button{font:700 15px Nunito,sans-serif;min-height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+ol{list-style:none;margin:0;padding:0;overflow-y:auto;flex:1;border-top:1px solid var(--line)}
+@media(max-width:900px){ol{max-height:420px}}
+li button{width:100%;text-align:left;display:flex;gap:10px;align-items:center;border:0;border-bottom:1px solid var(--line);border-radius:0;background:none;font-weight:600;min-height:42px;padding:6px 4px}
+li button[aria-current=true]{background:light-dark(#fde9e2,#3a2a25)}
+.dot{flex:none;width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.n{flex:none;width:22px;font-size:13px;color:var(--mute);text-align:right}
+.where{margin-left:auto;font-size:13px;color:var(--mute);white-space:nowrap}
+.note{font-size:13px;color:var(--mute);margin:14px 0 0}
+</style>
+</head>
+<body>
+<section class="band">
+  <h1>Desk pet circuit, screen in front</h1>
+  <p class="sub">Alternate layout: the LCD lies flat in row a and hangs off the front edge so the text reads the right way up. The front rails under it are swapped for the back rails. Step through it one part and one wire at a time, or jump to any step in the list. Holes are named by row letter and column number, like <b>b16</b>.</p>
+  <div class="wrap">
+    <div class="stage" id="stage"><div class="hint">Drag to rotate · scroll to zoom · right-drag to pan</div></div>
+    <aside class="now">
+      <div>
+        <div class="count" id="count"></div>
+        <p class="title" id="title"></p>
+      </div>
+      <p class="detail" id="detail"></p>
+      <div class="nav">
+        <button id="prev">Back</button>
+        <button id="next" class="pri">Next</button>
+        <button id="all">Show all</button>
+        <button id="labels" aria-pressed="true">Labels</button>
+      </div>
+      <ol id="list"></ol>
+    </aside>
+  </div>
+  <p class="note">Matches the pins in desk_pet.ino. The RGB LED and encoder modules sit on the desk and connect with female-to-male jumpers. Wire colours are only a suggestion: red for +5V and black for ground are worth keeping.</p>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+{
+const P = 2.54;
+const RZ = {a:13.97,b:11.43,c:8.89,d:6.35,e:3.81,f:-3.81,g:-6.35,h:-8.89,i:-11.43,j:-13.97,'+':20.32,'-':22.86,'P':-20.32,'M':-22.86};
+const hx = c => (c - 32) * P;
+const hole = (c, r) => new THREE.Vector3(hx(c), 0, RZ[r]);
+const C = {red:'#d7322e', black:'#2b2b2b', yellow:'#f2c230', orange:'#f07f22', white:'#f2f2f2', green:'#2f9e4f', blue:'#2f6fd6', purple:'#8a4fd1', gray:'#8d939b'};
+
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 1, 3000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(-5, 2, 12);
+controls.enableDamping = true;
+controls.minDistance = 60; controls.maxDistance = 600;
+controls.maxPolarAngle = Math.PI * 0.49;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 0.8));
+const sun = new THREE.DirectionalLight(0xffffff, 0.85);
+sun.position.set(60, 200, 140); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-140, right:140, top:140, bottom:-140, near:10, far:600});
+scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.ShadowMaterial({opacity:0.16}));
+ground.rotation.x = -Math.PI/2; ground.position.y = -9; ground.receiveShadow = true; scene.add(ground);
+
+const mat = (c, o={}) => new THREE.MeshStandardMaterial(Object.assign({color:c, roughness:0.6, metalness:0}, o));
+const box = (w, h, d, m, x, y, z, g) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
+const cyl = (rt, rb, h, m, x, y, z, g, seg=24) => { const o = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), m); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
+
+// ---------- Breadboard ----------
+{
+  const cv = document.createElement('canvas'); cv.width = 1650; cv.height = 550;
+  const c = cv.getContext('2d');
+  const U = x => (x + 82.5) * 10, V = z => (z + 27.5) * 10;
+  c.fillStyle = '#f7f6f2'; c.fillRect(0, 0, 1650, 550);
+  c.fillStyle = '#dedbd3'; c.fillRect(0, V(-1.9), 1650, 38);
+  c.fillStyle = '#3b3b3b';
+  for (let col = 1; col <= 63; col++) for (const r of Object.keys(RZ)) c.fillRect(U(hx(col)) - 6, V(RZ[r]) - 6, 12, 12);
+  c.fillStyle = '#d7322e'; c.fillRect(30, V(18.2) - 2, 1590, 4); c.fillRect(30, V(-18.2) - 2, 1590, 4);
+  c.fillStyle = '#2f6fd6'; c.fillRect(30, V(25) - 2, 1590, 4); c.fillRect(30, V(-25) - 2, 1590, 4);
+  c.font = '700 22px Nunito, sans-serif'; c.fillStyle = '#7b7b7b'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  for (const r of 'abcdefghij') c.fillText(r, U(-80.9), V(RZ[r]));
+  for (let col = 1; col <= 63; col++) if (col === 1 || col % 5 === 0) c.fillText(col, U(hx(col)), V(16.2));
+  c.fillStyle = '#d7322e'; c.fillText('+', U(-80.9), V(20.32)); c.fillText('+', U(-80.9), V(-20.32));
+  c.fillStyle = '#2f6fd6'; c.fillText('−', U(-80.9), V(22.86)); c.fillText('−', U(-80.9), V(-22.86));
+  const tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding; tex.anisotropy = 8;
+  const body = new THREE.Mesh(new THREE.BoxGeometry(165, 9, 55), mat(0xf2f1ec));
+  body.position.y = -4.5; body.receiveShadow = true; body.castShadow = true; scene.add(body);
+  const top = new THREE.Mesh(new THREE.PlaneGeometry(165, 55), new THREE.MeshStandardMaterial({map:tex, roughness:0.7}));
+  top.rotation.x = -Math.PI/2; top.position.y = 0.02; top.receiveShadow = true; scene.add(top);
+}
+
+// ---------- Steps ----------
+const steps = [];
+function addStep(title, detail, group, color, where, rings) {
+  scene.add(group);
+  const meshes = []; group.traverse(o => { if (o.isMesh && o.material.emissive) { o.userData.e0 = o.material.emissive.getHex(); o.userData.i0 = o.material.emissiveIntensity; meshes.push(o); } });
+  steps.push({title, detail, group, color, where, rings: rings || [], meshes});
+}
+
+// Nano: USB toward column 1. Row c: D13…VIN. Row g: D12…TX1.
+{
+  const g = new THREE.Group();
+  const gold = mat(0xd4b25a, {metalness:0.7, roughness:0.35});
+  for (let col = 5; col <= 19; col++) for (const r of ['c','g']) box(0.6, 8, 0.6, gold, hx(col), 4, RZ[r], g);
+  box(43.2, 1.6, 18, mat(0x1d4fae), hx(12), 8.8, 1.27, g);
+  const chip = box(7, 1.2, 7, mat(0x1b1c1f), hx(13), 10.2, 1.27, g); chip.rotation.y = Math.PI/4;
+  box(9, 4, 7.5, mat(0xc4c8ce, {metalness:0.7, roughness:0.3}), hx(5) - 4.5, 11.6, 1.27, g);
+  box(3, 1.4, 3, mat(0xeeeeee), hx(9), 10.3, 1.27, g);
+  addStep('Place the Nano', 'Push it across the center gap so its pins land in columns 5–19, USB toward column 1. The 5V, GND and A0–A7 side sits in row c; D2–D12 sits in row g.', g, '#1d4fae', 'c5–g19');
+}
+
+// LCD1602: pins in row j, columns 33–48 (pin n at column 32 + n)
+const lcdCv = document.createElement('canvas'); lcdCv.width = 512; lcdCv.height = 112;
+{
+  const g = new THREE.Group();
+  const gold = mat(0xd4b25a, {metalness:0.7, roughness:0.35});
+  for (let col = 33; col <= 48; col++) box(0.6, 3, 0.6, gold, hx(col), 1.5, RZ.a, g);
+  box(41, 2.5, 2.5, mat(0x1b1c1f), (hx(33) + hx(48)) / 2, 4.2, RZ.a, g);
+  const cx = hx(33) - 8 + 40, cz = RZ.a - 2.5 + 18;
+  box(80, 1.6, 36, mat(0x1f7a3a), cx, 6.3, cz, g);
+  box(71, 7, 24, mat(0x5b6068, {metalness:0.5, roughness:0.4}), cx, 10.6, cz, g);
+  box(22, 14.5, 14, mat(0xf3a6b8, {roughness:0.8}), cx, -1.75, 40, g);
+  const lc = lcdCv.getContext('2d');
+  const tex = new THREE.CanvasTexture(lcdCv); tex.encoding = THREE.sRGBEncoding;
+  const draw = () => {
+    lc.fillStyle = '#2456c9'; lc.fillRect(0, 0, 512, 112);
+    lc.fillStyle = '#eaf2ff'; lc.font = '46px VT323, monospace'; lc.textBaseline = 'middle';
+    lc.fillText('(o_o) ready?', 18, 32); lc.fillText(' 25:00    ♥x0', 18, 82);
+    tex.needsUpdate = true;
+  };
+  draw(); if (document.fonts) document.fonts.load('46px VT323').then(draw);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(64, 14), new THREE.MeshBasicMaterial({map:tex}));
+  scr.rotation.x = -Math.PI/2; scr.position.set(cx, 14.2, cz); g.add(scr);
+  addStep('Lay the LCD in row a', 'Pins in a33–a48, pin 1 (VSS) in column 33. The screen lies face up and hangs off the front edge; prop the far end on an eraser so it stays level. Row b sits under the edge of the board, so every LCD wire uses row c.', g, '#1f7a3a', 'a33–a48');
+}
+
+// Trimpot: legs e22, e23, e24
+{
+  const g = new THREE.Group();
+  const leg = mat(0xb9bcc2, {metalness:0.6});
+  for (const col of [22,23,24]) box(0.6, 3, 0.6, leg, hx(col), 1.5, RZ.e, g);
+  box(9.5, 6.5, 8, mat(0x2d6fd0), hx(23), 4.8, RZ.e, g);
+  cyl(3, 3, 1.2, mat(0xf2f2f2), hx(23), 8.6, RZ.e, g);
+  addStep('Add the potentiometer', 'Legs in e22, e23, e24. This sets the LCD contrast.', g, '#2d6fd0', 'e22–e24');
+}
+
+// 220 ohm resistor d47 to d51
+{
+  const g = new THREE.Group();
+  const lead = mat(0xb9bcc2, {metalness:0.6});
+  const a = hx(47), b = hx(51), y = 3;
+  box(0.5, y, 0.5, lead, a, y/2, RZ.d, g); box(0.5, y, 0.5, lead, b, y/2, RZ.d, g);
+  box(b - a, 0.5, 0.5, lead, (a + b) / 2, y, RZ.d, g);
+  const body = cyl(1.3, 1.3, 6.3, mat(0xd9c08f), (a + b) / 2, y, RZ.d, g); body.rotation.z = Math.PI/2;
+  [['#d7322e',-1.8],['#d7322e',-0.6],['#7a4a22',0.6],['#c9a43a',2.1]].forEach(([c, dx]) => {
+    const band = cyl(1.38, 1.38, 0.6, mat(c), (a + b) / 2 + dx, y, RZ.d, g); band.rotation.z = Math.PI/2;
+  });
+  addStep('Add the 220Ω resistor', 'From d47 to d51. It limits current to the LCD backlight (pin A, column 47).', g, '#d9c08f', 'd47–d51');
+}
+
+// Buzzer: g27 (+), g30 (-)
+{
+  const g = new THREE.Group();
+  const lead = mat(0xb9bcc2, {metalness:0.6});
+  box(0.6, 2, 0.6, lead, hx(27), 1, RZ.g, g); box(0.6, 2, 0.6, lead, hx(30), 1, RZ.g, g);
+  cyl(6, 6, 9, mat(0x1b1c1f), (hx(27) + hx(30)) / 2, 6, RZ.g, g, 32);
+  cyl(1, 1, 0.3, mat(0x444444), (hx(27) + hx(30)) / 2, 10.6, RZ.g, g);
+  addStep('Add the buzzer', 'Longer leg (+) in g27, shorter leg (−) in g30. It moved to the back half so it isn’t under the screen.', g, '#1b1c1f', 'g27, g30');
+}
+
+// Modules on the desk
+const pinsOf = {};
+function module(name, cx, cz, w, d, labels) {
+  const g = new THREE.Group();
+  box(w, 1.6, d, mat(0x1d1f24), cx, -8.2, cz, g);
+  const gold = mat(0xd4b25a, {metalness:0.7, roughness:0.35});
+  pinsOf[name] = {};
+  labels.forEach((lab, i) => {
+    const x = cx + (i - (labels.length - 1) / 2) * P, zb = cz - d/2;
+    box(0.6, 0.6, 6, gold, x, -6.5, zb - 3, g);
+    box(2.4, 2.4, 12, mat(0x1b1c1f), x, -6.5, zb - 8, g);
+    pinsOf[name][lab] = new THREE.Vector3(x, -6.5, zb - 14);
+  });
+  return g;
+}
+{
+  const g = module('rgb', -30, 56, 19, 15, ['R','G','B','-']);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 16), mat(0xffffff, {emissive:0xff6fa8, emissiveIntensity:0.55, roughness:0.2}));
+  dome.position.set(-30, -6.4, 58); g.add(dome);
+  const g2 = module('enc', -68, 60, 26, 19, ['GND','+','SW','DT','CLK']);
+  box(12, 6, 12, mat(0xa7acb3, {metalness:0.6, roughness:0.35}), -68, -4.4, 62, g2);
+  const knob = cyl(7, 7.4, 9, mat(0x26282d, {roughness:0.45}), -68, 3.1, 62, g2, 30);
+  g2.children.forEach(o => g.add(o.clone()));
+  addStep('Set the modules on the desk', 'Put the RGB LED module and the rotary encoder in front of the board, pins facing it. Clip a female-to-male jumper onto each pin.', g, '#ff6fa8', 'desk');
+}
+
+// ---------- Wires ----------
+const RN = {'+':'front + rail','-':'front − rail','P':'back + rail','M':'back − rail'};
+const tag = e => e.pin ? (e.pin[0] === 'rgb' ? 'RGB ' : 'Encoder ') + e.pin[1].replace('-', '−') : (RN[e.r] || e.r + e.c);
+function endInfo(e) {
+  if (e.pin) {
+    const p = pinsOf[e.pin[0]][e.pin[1]].clone();
+    return {start:p, dir:new THREE.Vector3(0, 1, -0.5).normalize(), housing:null};
+  }
+  const h = hole(e.c, e.r);
+  return {start:new THREE.Vector3(h.x, 8, h.z), dir:new THREE.Vector3(0, 1, 0), housing:h};
+}
+function wire(title, detail, a, b, color) {
+  const g = new THREE.Group();
+  const A = endInfo(a), B = endInfo(b);
+  const p1 = A.start.clone().addScaledVector(A.dir, 6), p3 = B.start.clone().addScaledVector(B.dir, 6);
+  const mid = p1.clone().add(p3).multiplyScalar(0.5);
+  mid.y = Math.min(34, Math.max(16, 10 + p1.distanceTo(p3) * 0.14, p1.y + 3, p3.y + 3));
+  const curve = new THREE.CatmullRomCurve3([A.start, p1, mid, p3, B.start], false, 'centripetal');
+  const m = mat(color, {roughness:0.45});
+  const t = new THREE.Mesh(new THREE.TubeGeometry(curve, 80, 0.55, 8), m); t.castShadow = true; g.add(t);
+  const hm = mat(0x1b1c1f);
+  const rings = [];
+  for (const E of [A, B]) if (E.housing) { box(2, 8, 2, hm, E.housing.x, 4, E.housing.z, g); rings.push(E.housing); }
+  addStep(title, detail, g, color, `${tag(a)} → ${tag(b)}`, rings);
+}
+const H = (c, r) => ({c, r}), R = (c, s) => ({c, r:s}), PIN = (m, l) => ({pin:[m, l]});
+
+wire('Nano 5V → front + rail', 'Powers the front + rail.', H(16,'b'), R(16,'+'), C.red);
+wire('Nano GND → front − rail', 'Grounds the front − rail.', H(18,'b'), R(18,'-'), C.black);
+wire('Front + rail → back + rail', 'The screen covers the front rails from column 30 on, so power the back rails too.', R(28,'+'), R(28,'P'), C.red);
+wire('Front − rail → back − rail', 'Ground for the back rails.', R(29,'-'), R(29,'M'), C.black);
+wire('LCD VSS → back − rail', 'LCD pin 1, ground.', H(33,'c'), R(33,'M'), C.black);
+wire('LCD VDD → back + rail', 'LCD pin 2, 5V power.', H(34,'c'), R(34,'P'), C.red);
+wire('LCD RW → back − rail', 'LCD pin 5. Grounding it keeps the LCD in write mode.', H(37,'c'), R(37,'M'), C.black);
+wire('Pot left leg → front + rail', 'One outer leg of the pot to 5V.', H(22,'c'), R(22,'+'), C.red);
+wire('Pot right leg → front − rail', 'The other outer leg to ground.', H(24,'c'), R(24,'-'), C.black);
+wire('Pot middle → LCD V0', 'Contrast control. If the screen is blank or shows solid blocks, turn the pot.', H(23,'b'), H(35,'c'), C.yellow);
+wire('Backlight → back + rail', 'Feeds LCD pin A (column 47) through the 220Ω resistor.', H(51,'c'), R(51,'P'), C.red);
+wire('LCD K → back − rail', 'LCD pin 16, backlight ground.', H(48,'c'), R(48,'M'), C.black);
+wire('D12 → LCD RS', 'Nano D12 (h5) to LCD pin 4.', H(5,'h'), H(36,'c'), C.orange);
+wire('D11 → LCD E', 'Nano D11 (h6) to LCD pin 6.', H(6,'h'), H(38,'c'), C.white);
+wire('D5 → LCD D4', 'Nano D5 (h12) to LCD pin 11.', H(12,'h'), H(43,'c'), C.green);
+wire('A0 → LCD D5', 'Nano A0 (b8) to LCD pin 12.', H(8,'b'), H(44,'c'), C.blue);
+wire('A1 → LCD D6', 'Nano A1 (b9) to LCD pin 13.', H(9,'b'), H(45,'c'), C.purple);
+wire('A2 → LCD D7', 'Nano A2 (b10) to LCD pin 14.', H(10,'b'), H(46,'c'), C.gray);
+wire('D3 → buzzer +', 'Nano D3 (h14) to the buzzer’s + leg.', H(14,'h'), H(27,'j'), C.yellow);
+wire('Buzzer − → back − rail', 'Buzzer ground.', H(30,'j'), R(30,'M'), C.black);
+wire('D9 → RGB R', 'Nano D9 (h8) to the module’s R pin.', H(8,'h'), PIN('rgb','R'), C.red);
+wire('D10 → RGB G', 'Nano D10 (h7) to the module’s G pin.', H(7,'h'), PIN('rgb','G'), C.green);
+wire('D6 → RGB B', 'Nano D6 (h11) to the module’s B pin.', H(11,'h'), PIN('rgb','B'), C.blue);
+wire('RGB − → − rail', 'Module ground.', PIN('rgb','-'), R(26,'-'), C.black);
+wire('Encoder GND → − rail', 'Encoder ground.', PIN('enc','GND'), R(10,'-'), C.black);
+wire('Encoder + → + rail', 'Encoder 5V.', PIN('enc','+'), R(12,'+'), C.red);
+wire('A3 → encoder SW', 'Nano A3 (b11) to SW, the push button.', H(11,'b'), PIN('enc','SW'), C.white);
+wire('D4 → encoder DT', 'Nano D4 (h13) to DT.', H(13,'h'), PIN('enc','DT'), C.orange);
+wire('D2 → encoder CLK', 'Nano D2 (h15) to CLK.', H(15,'h'), PIN('enc','CLK'), C.purple);
+
+// ---------- Labels ----------
+const labels = new THREE.Group(); scene.add(labels);
+function label(text, x, y, z) {
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128;
+  const c = cv.getContext('2d');
+  const draw = () => {
+    c.clearRect(0, 0, 512, 128);
+    c.font = '800 54px Nunito, sans-serif';
+    const w = Math.min(500, c.measureText(text).width + 48);
+    c.fillStyle = 'rgba(31,33,38,0.88)';
+    c.beginPath(); c.roundRect ? c.roundRect((512 - w) / 2, 22, w, 84, 42) : c.rect((512 - w) / 2, 22, w, 84); c.fill();
+    c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(text, 256, 66);
+    s.material.map.needsUpdate = true;
+  };
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cv), depthTest:false, transparent:true}));
+  s.scale.set(32, 8, 1); s.position.set(x, y, z); s.renderOrder = 10; labels.add(s);
+  draw(); if (document.fonts) document.fonts.ready.then(draw);
+}
+label('Nano', hx(12), 24, 1); label('LCD1602', hx(33) + 32, 24, RZ.a + 16); label('Pot', hx(23), 15, RZ.e);
+label('Buzzer', hx(28.5), 20, RZ.g); label('220Ω', hx(49), 9, RZ.d - 3); label('RGB LED', -30, 6, 58); label('Encoder', -68, 18, 62);
+
+// ---------- Hole markers ----------
+const ringMat = new THREE.MeshBasicMaterial({color:0xff7a59, depthTest:false, transparent:true});
+const rings = [0,1].map(() => { const r = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.45, 10, 32), ringMat); r.rotation.x = Math.PI/2; r.renderOrder = 11; r.visible = false; scene.add(r); return r; });
+
+// ---------- UI ----------
+const N = steps.length;
+let cur = N;
+const $ = id => document.getElementById(id);
+$('list').innerHTML = steps.map((s, i) =>
+  `<li><button data-i="${i}"><span class="n">${i + 1}</span><span class="dot" style="background:${s.color}"></span><span>${s.title}</span></button></li>`).join('');
+$('list').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(+b.dataset.i); });
+$('prev').onclick = () => go(cur === N ? N - 1 : Math.max(0, cur - 1));
+$('next').onclick = () => go(cur >= N - 1 ? N : cur + 1);
+$('all').onclick = () => go(N);
+$('labels').onclick = () => { labels.visible = !labels.visible; $('labels').setAttribute('aria-pressed', labels.visible); };
+
+function go(i) {
+  cur = i;
+  steps.forEach((s, k) => {
+    s.group.visible = i === N || k <= i;
+    s.meshes.forEach(m => {
+      if (k === i) m.material.emissive.setHex(0xff7a59);
+      else { m.material.emissive.setHex(m.userData.e0); m.material.emissiveIntensity = m.userData.i0; }
+    });
+  });
+  const s = steps[i];
+  $('count').textContent = i === N ? `All ${N} steps` : `Step ${i + 1} of ${N} · ${s.where}`;
+  $('title').textContent = i === N ? 'The finished circuit' : s.title;
+  $('detail').textContent = i === N ? 'Every part and wire in place. Press Back or pick a step to rebuild it one move at a time.' : s.detail;
+  $('next').textContent = i >= N - 1 ? 'Finish' : 'Next';
+  $('next').disabled = i === N; $('prev').disabled = i === 0;
+  rings.forEach((r, k) => { const p = s && s.rings[k]; r.visible = !!p && i !== N; if (p) r.position.set(p.x, 0.4, p.z); });
+  document.querySelectorAll('#list button').forEach(b => {
+    const on = +b.dataset.i === i; b.setAttribute('aria-current', on);
+    if (on) b.scrollIntoView({block:'nearest'});
+  });
+}
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea')) return;
+  if (e.key === 'ArrowRight') $('next').click();
+  if (e.key === 'ArrowLeft') $('prev').click();
+});
+
+const resize = () => {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+};
+const ro = new ResizeObserver(resize); ro.observe(stage);
+resize();
+const dist = stage.clientWidth < 560 ? 330 : 250;
+camera.position.set(-5, 2 + dist * 0.62, 12 + dist * 0.78);
+go(N);
+
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function frame(t) {
+  const k = still ? 0.6 : 0.35 + 0.35 * Math.sin(t / 220);
+  if (cur < N) steps[cur].meshes.forEach(m => m.material.emissiveIntensity = k);
+  const sc = still ? 1 : 1 + 0.18 * Math.sin(t / 220);
+  rings.forEach(r => r.scale.setScalar(sc));
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>
