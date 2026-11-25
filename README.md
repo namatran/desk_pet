@@ -6,17 +6,17 @@ Built on an Arduino Nano with a rotary encoder, an RGB LED and a buzzer.
 
 ![Desk pet on a breadboard showing the ready screen, 01:00 and three hearts](images/desk_pet.jpg)
 
-**Try it without hardware:** [`model/index.html`](model/index.html) is an interactive model of the pet that runs the same logic as the sketch. Download it with the `images` folder and open it in a browser. You can turn and press the knob, speed up time to 60×, and hear the beeps.
+**[Try it without hardware](https://claude.ai/artifact/SANz35iexcV5LpH7PQzdpn):** an interactive model of the pet that runs the same logic as the sketch. You can turn and press the knob, speed up time to 60×, and hear the beeps. An offline copy is in [`model/index.html`](model/index.html); download it with the `images` folder.
 
 ## 3D models
 
-Interactive 3D pages you can spin and zoom. Download a file and open it in a browser; it loads three.js from a CDN, so it needs an internet connection.
+Interactive 3D pages you can spin and zoom. Click a name to open it in your browser. Offline copies are in the [`3d`](3d) folder; they load three.js from a CDN, so they still need an internet connection.
 
-| File | What it shows |
+| Model | What it shows |
 |---|---|
-| [`3d/breadboard.html`](3d/breadboard.html) | The full circuit on an 830-point breadboard, built step by step with every hole named (like `b16`). The LCD stands upright in row j. |
-| [`3d/breadboard-front-lcd.html`](3d/breadboard-front-lcd.html) | A second layout with the LCD lying flat in row a and hanging off the front edge, so it faces you. The back rails carry power for the screen. |
-| [`3d/enclosure.html`](3d/enclosure.html) | A concept 3D-printed shell with a tilted face, knob, LED and speaker grille. You can change the PLA color and look inside. These are rough sizes, not a print file. |
+| [Breadboard circuit](https://claude.ai/artifact/YFF3RWoLPZabkuG9CK3993) | The full circuit on an 830-point breadboard, built step by step with every hole named (like `b16`). The LCD stands upright in row j. |
+| [Front-facing LCD circuit](https://claude.ai/artifact/VtPYkK65fCz4SG4bsrE5wC) | A second layout with the LCD lying flat in row a and hanging off the front edge, so it faces you. The back rails carry power for the screen. |
+| [Enclosure concept](https://claude.ai/artifact/C8XS41Bc4vuAf5zvahWdsq) | A concept 3D-printed shell with a tilted face, knob, LED and speaker grille. You can change the PLA color and look inside. These are rough sizes, not a print file. |
 
 ## Features
 
