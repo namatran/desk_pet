@@ -14,8 +14,7 @@ Interactive 3D pages you can spin and zoom. Click a name to open it in your brow
 
 | Model | What it shows |
 |---|---|
-| [Breadboard circuit](https://claude.ai/artifact/YFF3RWoLPZabkuG9CK3993) | The full circuit on an 830-point breadboard, built step by step with every hole named (like `b16`). The LCD stands upright in row j. |
-| [Front-facing LCD circuit](https://claude.ai/artifact/VtPYkK65fCz4SG4bsrE5wC) | A second layout with the LCD lying flat in row a and hanging off the front edge, so it faces you. The back rails carry power for the screen. |
+| [Breadboard circuit](https://claude.ai/artifact/VtPYkK65fCz4SG4bsrE5wC) | The full circuit on an 830-point breadboard, built step by step with every hole named (like `b16`). The LCD lies flat in row a and hangs off the front edge, so it faces you. The back rails carry power for the screen. |
 | [Enclosure concept](https://claude.ai/artifact/C8XS41Bc4vuAf5zvahWdsq) | A concept 3D-printed shell with a tilted face, knob, LED and speaker grille. You can change the PLA color and look inside. These are rough sizes, not a print file. |
 
 ## Features
