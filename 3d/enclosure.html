@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desk Pet Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* VOICE: playful maker's workbench, friendly and precise
+   IDEA: a product turntable shot of a small desk toy you can spin and open
+   PICTURE: the live 3D enclosure with a working LCD face, filling the first screen
+   COLOUR and TYPE: warm paper ground, charcoal ink, shell colour as the accent; Nunito
+   LAYOUT: title, big model, controls under it, specs and build notes below */
+:root{color-scheme:light dark;--bg:light-dark(#f4f1ec,#17181b);--ink:light-dark(#1f2126,#ecebe7);--mute:light-dark(#62656d,#a3a5ab);--card:light-dark(#fffdf9,#202227);--line:light-dark(#e2ddd4,#2e3036);--acc:#ff7a59}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(20px,3vw,40px) max(5vw,16px);max-width:1240px;margin:0 auto}
+h1{font-size:clamp(32px,5vw,48px);line-height:1.05;margin:0 0 6px;font-weight:800;text-wrap:balance}
+.sub{color:var(--mute);margin:0;max-width:62ch}
+.stage{position:relative;height:clamp(360px,62vh,620px);border-radius:20px;background:radial-gradient(120% 90% at 50% 20%,light-dark(#fff,#2a2c31),light-dark(#e9e4dc,#141518));overflow:hidden;margin-top:18px;touch-action:none}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab}
+.hint{position:absolute;left:16px;bottom:12px;font-size:13px;color:var(--mute);pointer-events:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:16px}
+.grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.grp>span{font-size:13px;color:var(--mute);margin-right:4px}
+button{font:700 15px Nunito,sans-serif;min-height:44px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.sw{width:44px;padding:0;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1px var(--line)}
+.sw[aria-pressed=true]{box-shadow:0 0 0 2px var(--ink)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:28px}
+h2{font-size:22px;margin:0 0 10px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;white-space:nowrap;padding-left:12px}
+ol{margin:0;padding-left:20px}li{margin-bottom:8px}
+.note{font-size:13px;color:var(--mute);margin-top:10px}
+</style>
+</head>
+<body>
+<section class="band">
+  <h1>Desk pet, in a printed shell</h1>
+  <p class="sub">A concept enclosure for the Nano Pomodoro pet: LCD1602 face, rotary knob, status LED and a speaker grille. Drag to spin it, scroll or pinch to zoom, and open it up to see where the parts sit.</p>
+  <div class="stage" id="stage"><div class="hint">Drag to rotate · scroll to zoom</div></div>
+  <div class="ctrls">
+    <div class="grp" id="modes"><span>Mode</span>
+      <button data-m="ready" aria-pressed="true">Ready</button>
+      <button data-m="focus" aria-pressed="false">Focus</button>
+      <button data-m="break" aria-pressed="false">Break</button>
+      <button data-m="sleep" aria-pressed="false">Asleep</button>
+    </div>
+    <div class="grp"><span>View</span>
+      <button id="inside" aria-pressed="false">See inside</button>
+      <button id="spin" aria-pressed="true">Turntable</button>
+    </div>
+    <div class="grp" id="colors"><span>PLA</span></div>
+  </div>
+</section>
+<section class="band">
+  <div class="cols">
+    <div>
+      <h2>Rough dimensions</h2>
+      <table>
+        <tr><td>Outside (W × H × D)</td><td>108 × 64 × 66 mm</td></tr>
+        <tr><td>Screen window</td><td>66 × 17 mm</td></tr>
+        <tr><td>LCD1602 board behind it</td><td>80 × 36 mm</td></tr>
+        <tr><td>Knob hole (KY-040 shaft)</td><td>7 mm</td></tr>
+        <tr><td>LED hole</td><td>5 mm</td></tr>
+        <tr><td>Face tilt</td><td>about 18°</td></tr>
+      </table>
+      <p class="note">Concept sizes, not a print file. Measure your own LCD and encoder before modeling for real.</p>
+    </div>
+    <div>
+      <h2>How it would go together</h2>
+      <ol>
+        <li>LCD screws to standoffs behind the window. The pot for contrast sits on the breadboard.</li>
+        <li>The encoder shaft pokes through the face and its nut clamps it in place.</li>
+        <li>Nano lies on the floor with its USB port at the back opening, so you can reflash it without opening the case.</li>
+        <li>Print the shell and a flat base plate separately. The base screws on with M3 screws so you can get back inside.</li>
+        <li>Both printers you're looking at have room for this many times over.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+{
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 1, 2000);
+camera.position.set(140, 95, 175);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 28, 0);
+controls.enableDamping = true;
+controls.minDistance = 110; controls.maxDistance = 420;
+controls.maxPolarAngle = Math.PI * 0.52;
+controls.autoRotate = true; controls.autoRotateSpeed = 1.2;
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 0.75));
+const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+sun.position.set(90, 160, 120);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left:-120, right:120, top:120, bottom:-120, near:10, far:500});
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffe9d6, 0.35);
+fill.position.set(-120, 60, -60); scene.add(fill);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({opacity:0.18}));
+ground.rotation.x = -Math.PI/2; ground.position.y = -5; ground.receiveShadow = true;
+scene.add(ground);
+
+const mat = (c, o={}) => new THREE.MeshStandardMaterial(Object.assign({color:c, roughness:0.6, metalness:0}, o));
+
+// ---------- Shell: wedge profile extruded across the width ----------
+const prof = new THREE.Shape();
+prof.moveTo(0, 0); prof.lineTo(62, 0); prof.lineTo(62, 44); prof.lineTo(18, 60); prof.lineTo(0, 6); prof.lineTo(0, 0);
+const shellGeo = new THREE.ExtrudeGeometry(prof, {depth:104, bevelEnabled:true, bevelSize:2, bevelThickness:2, bevelSegments:4, curveSegments:8});
+shellGeo.rotateY(Math.PI/2);
+shellGeo.translate(-52, 0, 31);
+const shellMat = mat(0xff7a59, {roughness:0.55});
+const shell = new THREE.Mesh(shellGeo, shellMat);
+shell.castShadow = true; shell.receiveShadow = true;
+scene.add(shell);
+
+const dark = mat(0x22252a, {roughness:0.5});
+[[-44,24],[44,24],[-44,-24],[44,-24]].forEach(([x,z]) => {
+  const f = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 3, 20), dark);
+  f.position.set(x, -3.5, z); f.castShadow = true; scene.add(f);
+});
+const usb = new THREE.Mesh(new THREE.BoxGeometry(11, 5, 2), mat(0x0d0e10));
+usb.position.set(12, 6, -32.6); scene.add(usb);
+
+// ---------- Face: everything mounted on the tilted front ----------
+const tilt = Math.atan2(18, 54);
+const face = new THREE.Group();
+face.position.set(0, 33 + 2.1 * Math.sin(tilt), 22 + 2.1 * Math.cos(tilt));
+face.rotation.x = -tilt;
+scene.add(face);
+
+const bezel = new THREE.Mesh(new THREE.BoxGeometry(76, 30, 1.6), dark);
+bezel.position.set(-10, 6, 0.3); face.add(bezel);
+
+const cv = document.createElement('canvas');
+cv.width = 500; cv.height = 125;
+const ctx = cv.getContext('2d');
+const tex = new THREE.CanvasTexture(cv);
+tex.encoding = THREE.sRGBEncoding;
+tex.anisotropy = 4;
+const screen = new THREE.Mesh(new THREE.PlaneGeometry(66, 16.5), new THREE.MeshBasicMaterial({map:tex}));
+screen.position.set(-10, 6, 1.2); face.add(screen);
+
+const knobPivot = new THREE.Group();
+knobPivot.position.set(38, 0, 0.5); knobPivot.rotation.x = Math.PI/2;
+face.add(knobPivot);
+const knob = new THREE.Group(); knobPivot.add(knob);
+const knobBody = new THREE.Mesh(new THREE.CylinderGeometry(8, 8.6, 10, 36), mat(0x2b2e33, {roughness:0.4}));
+knobBody.position.y = 5; knobBody.castShadow = true; knob.add(knobBody);
+const notch = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 5.5), mat(0xf4f1ec));
+notch.position.set(0, 10.2, 3.6); knob.add(notch);
+
+const ledMat = mat(0xffffff, {emissive:0x333333, roughness:0.2});
+const led = new THREE.Mesh(new THREE.SphereGeometry(2.6, 24, 16, 0, Math.PI*2, 0, Math.PI/2), ledMat);
+led.rotation.x = Math.PI/2; led.position.set(38, 20, 0.2); face.add(led);
+
+for (let r = 0; r < 2; r++) for (let i = 0; i < 10; i++) {
+  const h = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, 0.6, 14), mat(0x111214));
+  h.rotation.x = Math.PI/2; h.position.set(-38 + i*6 + r*3, -17 - r*5, 0.1); face.add(h);
+}
+
+// ---------- Internals (shown with "See inside") ----------
+const inside = new THREE.Group(); inside.visible = false; scene.add(inside);
+const faceInside = new THREE.Group(); faceInside.visible = false; face.add(faceInside);
+const green = mat(0x1f7a3a, {roughness:0.7}), blue = mat(0x1c4fb0, {roughness:0.6});
+
+const lcdPcb = new THREE.Mesh(new THREE.BoxGeometry(80, 36, 1.6), green);
+lcdPcb.position.set(-10, 6, -4); faceInside.add(lcdPcb);
+const lcdBody = new THREE.Mesh(new THREE.BoxGeometry(71, 24, 7), dark);
+lcdBody.position.set(-10, 6, -0.5); faceInside.add(lcdBody);
+const enc = new THREE.Mesh(new THREE.BoxGeometry(14, 14, 7), mat(0x4a4f57));
+enc.position.set(38, 0, -4); faceInside.add(enc);
+const encPcb = new THREE.Mesh(new THREE.BoxGeometry(18, 26, 1.6), green);
+encPcb.position.set(38, -3, -8); faceInside.add(encPcb);
+
+const nano = new THREE.Mesh(new THREE.BoxGeometry(45, 1.6, 18), blue);
+nano.position.set(12, 4, -18); inside.add(nano);
+const chip = new THREE.Mesh(new THREE.BoxGeometry(8, 1.4, 8), dark);
+chip.position.set(10, 5.4, -18); inside.add(chip);
+const usbPort = new THREE.Mesh(new THREE.BoxGeometry(6, 3, 8), mat(0xb8bcc2, {metalness:0.6, roughness:0.3}));
+usbPort.position.set(12, 6, -28); usbPort.rotation.y = Math.PI/2; inside.add(usbPort);
+const bb = new THREE.Mesh(new THREE.BoxGeometry(35, 9, 47), mat(0xf2f2f0));
+bb.position.set(-30, 5.5, -8); inside.add(bb);
+const pot = new THREE.Mesh(new THREE.CylinderGeometry(4, 4, 6, 20), mat(0x2d6fd0));
+pot.position.set(-30, 13, -16); inside.add(pot);
+const buzzer = new THREE.Mesh(new THREE.CylinderGeometry(6, 6, 8, 28), dark);
+buzzer.position.set(-30, 5, 20); inside.add(buzzer);
+
+scene.updateMatrixWorld(true);
+const wp = (obj, x=0, y=0, z=0) => obj.localToWorld(new THREE.Vector3(x, y, z));
+const wires = [
+  [0xd94141, [wp(nano,-15,1,4), new THREE.Vector3(-5,22,-4), wp(lcdPcb,-20,-10,-1)]],
+  [0xe9b42c, [wp(nano,-10,1,-4), new THREE.Vector3(5,26,-8), wp(lcdPcb,10,-12,-1)]],
+  [0x2f9e5b, [wp(nano,5,1,6), new THREE.Vector3(30,18,0), wp(encPcb,0,-8,-1)]],
+  [0x3c7be0, [wp(nano,18,1,-6), new THREE.Vector3(34,22,-6), wp(encPcb,4,-4,-1)]],
+  [0x8a4fd1, [wp(nano,-18,1,0), new THREE.Vector3(-30,12,8), wp(buzzer,0,4,0)]],
+  [0x222222, [wp(nano,-20,1,-6), new THREE.Vector3(-26,14,-20), wp(bb,4,4.5,-14)]]
+];
+wires.forEach(([c, pts]) => {
+  const t = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 32, 0.7, 8), mat(c, {roughness:0.45}));
+  inside.add(t);
+});
+
+// ---------- LCD drawing ----------
+const G = {
+  open:[0x00,0x0E,0x1F,0x1B,0x1F,0x0E,0x00,0x00], closed:[0,0,0,0,0x1F,0,0,0],
+  happy:[0x00,0x04,0x0A,0x11,0,0,0,0], sleepy:[0,0,0,0x1F,0x1F,0x0E,0,0],
+  smile:[0,0,0,0x11,0x0E,0,0,0], flat:[0,0,0,0,0x1F,0,0,0], heart:[0x00,0x0A,0x1F,0x1F,0x0E,0x04,0,0]
+};
+const X0 = 10, Y0 = 20, PX = 30, PY = 45;
+const LIT = '#eaf2ff', OFF = 'rgba(255,255,255,0.09)';
+function cellGrid(col, row, bits) {
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 5; c++) {
+    ctx.fillStyle = bits && (bits[r] >> (4 - c)) & 1 ? LIT : OFF;
+    ctx.fillRect(X0 + col*PX + c*5, Y0 + row*PY + r*5, 4, 4);
+  }
+}
+function cellText(col, row, ch) {
+  cellGrid(col, row, null);
+  if (ch === ' ') return;
+  ctx.fillStyle = LIT;
+  ctx.fillText(ch, X0 + col*PX + 12.5, Y0 + row*PY + 21);
+}
+function line(row, items) {
+  let col = 0;
+  for (const it of items) {
+    if (typeof it === 'string') for (const ch of it) { if (col < 16) cellText(col++, row, ch); }
+    else if (col < 16) cellGrid(col++, row, it);
+  }
+  while (col < 16) cellGrid(col++, row, null);
+}
+
+// ---------- Pet state ----------
+const MODES = {
+  ready: {eye:'open', mouth:'smile', text:'ready?', led:0xdddddd, start:25*60},
+  focus: {eye:'open', mouth:'flat', text:'focus!', led:0x33dd55, start:25*60},
+  break: {eye:'happy', mouth:'smile', text:'break time', led:0x3f7bff, start:5*60},
+  sleep: {eye:'sleepy', mouth:'flat', text:'zzz...', led:0x000000, start:25*60}
+};
+let mode = 'ready', left = MODES.ready.start, hearts = 2;
+let blinkUntil = 0, nextBlink = performance.now() + 2500, lastTick = performance.now();
+let knobTarget = 0;
+
+function drawScreen(now) {
+  const m = MODES[mode];
+  if (now > nextBlink) { blinkUntil = now + 160; nextBlink = now + 2500 + Math.random()*3500; }
+  let eye = m.eye;
+  if (eye === 'open' && now < blinkUntil) eye = 'closed';
+  ctx.fillStyle = '#2456c9'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.font = '40px VT323, monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  line(0, ['(', G[eye], G[m.mouth], G[eye], ') ', m.text]);
+  const mm = String(Math.floor(left/60)).padStart(2,'0'), ss = String(left%60).padStart(2,'0');
+  line(1, [` ${mm}:${ss}    `, G.heart, `x${hearts}`]);
+  tex.needsUpdate = true;
+}
+
+function setMode(m) {
+  mode = m; left = MODES[m].start; knobTarget += Math.PI/3;
+  const c = MODES[m].led;
+  ledMat.emissive.setHex(c); ledMat.color.setHex(c || 0x555555);
+  document.querySelectorAll('#modes button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m));
+}
+document.getElementById('modes').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setMode(b.dataset.m); });
+
+const spinBtn = document.getElementById('spin');
+spinBtn.addEventListener('click', () => {
+  controls.autoRotate = !controls.autoRotate;
+  spinBtn.setAttribute('aria-pressed', controls.autoRotate);
+});
+const inBtn = document.getElementById('inside');
+inBtn.addEventListener('click', () => {
+  const on = inBtn.getAttribute('aria-pressed') !== 'true';
+  inBtn.setAttribute('aria-pressed', on);
+  inside.visible = faceInside.visible = on;
+  shellMat.transparent = on; shellMat.opacity = on ? 0.22 : 1; shellMat.depthWrite = !on;
+  shell.castShadow = !on; shellMat.needsUpdate = true;
+});
+
+const COLORS = [['Coral',0xff7a59,'#ff7a59'],['Sage',0x9cc3a4,'#9cc3a4'],['Bone',0xefeae1,'#efeae1'],['Charcoal',0x3a3d44,'#3a3d44'],['Sky',0x7fb4f0,'#7fb4f0']];
+const colorGrp = document.getElementById('colors');
+colorGrp.insertAdjacentHTML('beforeend', COLORS.map(([n,,css], i) =>
+  `<button class="sw" style="background:${css}" aria-label="${n}" title="${n}" aria-pressed="${i===0}" data-i="${i}"></button>`).join(''));
+colorGrp.addEventListener('click', e => {
+  const b = e.target.closest('.sw'); if (!b) return;
+  shellMat.color.setHex(COLORS[b.dataset.i][1]);
+  colorGrp.querySelectorAll('.sw').forEach(s => s.setAttribute('aria-pressed', s === b));
+});
+
+if (matchMedia('(prefers-reduced-motion: reduce)').matches) { controls.autoRotate = false; spinBtn.setAttribute('aria-pressed', 'false'); }
+
+const resize = () => {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.position.setLength(w < 520 ? 290 : 240);
+  camera.updateProjectionMatrix();
+};
+const ro = new ResizeObserver(resize); ro.observe(stage);
+
+setMode('ready');
+if (document.fonts) document.fonts.load('40px VT323');
+
+function frame(now) {
+  if (now - lastTick >= 1000) {
+    lastTick = now;
+    if (mode === 'focus' || mode === 'break') {
+      left = Math.max(0, left - 1);
+      if (left === 0) { if (mode === 'focus') { hearts++; setMode('break'); } else setMode('ready'); }
+    }
+  }
+  knob.rotation.y += (knobTarget - knob.rotation.y) * 0.12;
+  drawScreen(now);
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>
