@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}</style>
+<title>Desk Pet Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column; the device sits up top like the pet on a desk, notes below it. */
+:root {
+  --bg: #eef1f5;
+  --surface: #ffffff;
+  --ink: #17202b;
+  --muted: #5a6778;
+  --line: #d6dce4;
+  --accent: #2547d0;
+  --shell: #1c2330;
+  --shell-ink: #c9d2de;
+  --shell-line: #2e3848;
+  --lcd-bg: #1f43d8;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e131a; --surface: #161d27; --ink: #e5eaf1; --muted: #98a4b3;
+    --line: #273141; --accent: #8199ff; --shell: #222b3a; --shell-ink: #c9d2de;
+    --shell-line: #334055; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e131a; --surface: #161d27; --ink: #e5eaf1; --muted: #98a4b3;
+  --line: #273141; --accent: #8199ff; --shell: #222b3a; --shell-ink: #c9d2de;
+  --shell-line: #334055; color-scheme: dark;
+}
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body);
+  font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 40px; }
+header { display: grid; gap: 8px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.05; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 1.35rem; margin: 0; text-wrap: balance; }
+.lede { color: var(--muted); max-width: 60ch; margin: 0; }
+a { color: var(--accent); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- Device ---------- */
+.device {
+  background: var(--shell); color: var(--shell-ink); border-radius: 22px;
+  padding: clamp(16px, 4vw, 28px); display: grid; gap: 22px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 18px 40px -22px rgba(10,20,40,0.55);
+}
+.lcd-bezel { background: #0b0f16; border-radius: 10px; padding: 10px; border: 1px solid var(--shell-line); }
+canvas#lcd { display: block; width: 100%; height: auto; border-radius: 4px; background: var(--lcd-bg); }
+.hw { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.hw-item { display: grid; justify-items: center; gap: 8px; }
+.hw-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #8794a7; }
+
+.led { width: 34px; height: 44px; position: relative; }
+.led-dome {
+  position: absolute; inset: 0; border-radius: 17px 17px 6px 6px;
+  background: radial-gradient(circle at 40% 30%, rgba(255,255,255,0.55), rgba(255,255,255,0.08) 45%, rgba(255,255,255,0.04));
+  border: 1px solid rgba(255,255,255,0.18);
+  transition: box-shadow 200ms ease, background-color 200ms ease;
+}
+.buzzer { width: 44px; height: 44px; border-radius: 50%; background: #10151d; border: 1px solid var(--shell-line); display: grid; place-items: center; }
+.buzzer i { width: 8px; height: 8px; border-radius: 50%; background: #2a3342; transition: background 80ms; }
+.buzzer.on i { background: #f2f5fa; box-shadow: 0 0 12px 3px rgba(242,245,250,0.6); }
+
+.knob-wrap { position: relative; width: 112px; height: 112px; }
+.knob { width: 112px; height: 112px; border-radius: 50%; cursor: grab; touch-action: none; outline: none; display: block; }
+.knob:active { cursor: grabbing; }
+.knob:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+.knob svg { width: 100%; height: 100%; display: block; }
+#knobFace { transition: transform 90ms ease-out; transform-origin: 56px 56px; }
+#holdRing { transition: stroke-dashoffset 60ms linear; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn {
+  font: 500 13px/1 var(--body); color: var(--shell-ink); background: #2a3444;
+  border: 1px solid #3a475c; border-radius: 8px; padding: 10px 12px; cursor: pointer;
+}
+.btn:hover { background: #334055; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn[aria-pressed="true"] { background: #e9eef7; color: #1c2330; border-color: #e9eef7; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; border-top: 1px solid var(--shell-line); padding-top: 18px; }
+.seg { display: inline-flex; gap: 4px; align-items: center; flex-wrap: wrap; }
+.readout { font-family: var(--mono); font-size: 12px; color: #9aa7b9; font-variant-numeric: tabular-nums; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 99px; background: #2a3444; color: #e6ebf2; font-family: var(--mono); font-size: 12px; }
+.chip i { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+.hint { font-size: 13px; color: var(--muted); margin: 0; }
+
+/* ---------- Notes ---------- */
+section { display: grid; gap: 14px; }
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+th { font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+td code { font-family: var(--mono); font-size: 13px; background: color-mix(in srgb, var(--accent) 10%, transparent); padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; border: 1px solid var(--line); }
+figure { margin: 0; display: grid; gap: 8px; }
+figure img { border-radius: 14px; border: 1px solid var(--line); display: block; width: 100%; height: auto; }
+figcaption { font-size: 13px; color: var(--muted); }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #knobFace, #holdRing, .led-dome, .buzzer i { transition: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Arduino Nano · LCD1602 · KY-040</span>
+    <h1>Desk Pet</h1>
+    <p class="lede">A working model of the desk pet Pomodoro timer. It runs the same logic as <code>desk_pet.ino</code>, so the face, timer, LED and beeps behave like the real build.</p>
+  </header>
+
+  <div class="device" aria-label="Desk pet model">
+    <div class="lcd-bezel"><canvas id="lcd" role="img" aria-label="LCD screen"></canvas></div>
+
+    <div class="hw">
+      <div class="hw-item">
+        <div class="led"><div class="led-dome" id="led"></div></div>
+        <span class="hw-label">RGB LED</span>
+      </div>
+      <div class="hw-item">
+        <div class="buzzer" id="buzzer"><i></i></div>
+        <span class="hw-label">Buzzer</span>
+      </div>
+      <div class="hw-item">
+        <div class="knob-wrap">
+          <div class="knob" id="knob" tabindex="0" role="button"
+               aria-label="Rotary knob. Drag or use arrow keys to turn. Click or press Space to start or pause. Hold for one second to reset.">
+            <svg viewBox="0 0 112 112" aria-hidden="true">
+              <circle cx="56" cy="56" r="53" fill="none" stroke="#2e3848" stroke-width="4"/>
+              <circle id="holdRing" cx="56" cy="56" r="53" fill="none" stroke="#e9eef7" stroke-width="4"
+                      stroke-dasharray="333" stroke-dashoffset="333" transform="rotate(-90 56 56)" stroke-linecap="round"/>
+              <g id="knobFace">
+                <circle cx="56" cy="56" r="44" fill="#3a4558"/>
+                <g id="ridges"></g>
+                <circle cx="56" cy="56" r="34" fill="#4a566b"/>
+                <circle cx="56" cy="56" r="34" fill="url(#shine)"/>
+                <rect x="53.5" y="25" width="5" height="18" rx="2.5" fill="#e9eef7"/>
+              </g>
+              <defs>
+                <radialGradient id="shine" cx="40%" cy="35%" r="70%">
+                  <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+                  <stop offset="1" stop-color="#000000" stop-opacity="0.15"/>
+                </radialGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+        <span class="hw-label">Knob · drag, click, hold</span>
+      </div>
+    </div>
+
+    <div class="controls" aria-label="Knob buttons">
+      <button class="btn" id="bLeft" type="button">◀ Turn left</button>
+      <button class="btn" id="bPress" type="button">Press</button>
+      <button class="btn" id="bHold" type="button">Hold 1 s</button>
+      <button class="btn" id="bRight" type="button">Turn right ▶</button>
+    </div>
+
+    <div class="bar">
+      <div class="seg" role="group" aria-label="Time speed">
+        <span class="hw-label" style="margin-right:6px">Speed</span>
+        <button class="btn" type="button" data-speed="1" aria-pressed="true">1×</button>
+        <button class="btn" type="button" data-speed="10" aria-pressed="false">10×</button>
+        <button class="btn" type="button" data-speed="60" aria-pressed="false">60×</button>
+        <button class="btn" type="button" id="sound" aria-pressed="false">Sound off</button>
+      </div>
+      <div class="readout"><span class="chip" id="modeChip"><i id="modeDot"></i><span id="modeText">READY</span></span></div>
+    </div>
+  </div>
+  <p class="hint">Tip: at 60× speed, one minute takes one second, so a 1-minute focus session plus its 5-minute break plays out in about 6 seconds.</p>
+
+  <section>
+    <h2>What each state looks like</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Screen says</th><th>LED</th><th>How you get there</th></tr></thead>
+        <tbody>
+          <tr><td><code>ready?</code></td><td><span class="sw" style="background:#d9dde3"></span>Dim white</td><td>Power on, a finished break, or holding the knob for 1 s</td></tr>
+          <tr><td><code>focus!</code></td><td><span class="sw" style="background:#2fd36b"></span>Green</td><td>Press the knob on the ready screen (1 beep)</td></tr>
+          <tr><td><code>break time</code></td><td><span class="sw" style="background:#3d6bff"></span>Blue</td><td>The focus timer runs out (3 beeps, +1 heart)</td></tr>
+          <tr><td><code>paused</code></td><td><span class="sw" style="background:#ffad1f"></span>Amber</td><td>Press during focus or a break; press again to resume</td></tr>
+          <tr><td><code>zzz...</code></td><td><span class="sw" style="background:transparent"></span>Off</td><td>60 s with no input on the ready screen</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>The real one</h2>
+    <figure>
+      <img src="../images/desk_pet.jpg" alt="The desk pet on a breadboard: Arduino Nano, blue LCD showing a face, ready?, 01:00 and three hearts, a rotary encoder and a glowing green LED" width="2000" height="1500" loading="lazy">
+      <figcaption>Breadboard build with an Arduino Nano clone, LCD1602, KY-040 encoder, RGB LED and a buzzer. Three focus sessions done.</figcaption>
+    </figure>
+  </section>
+
+  <footer>Code, wiring and parts list: <a href="https://github.com/namatran/desk_pet">github.com/namatran/desk_pet</a></footer>
+</div>
+
+<script>
+(() => {
+  // ---------- LCD glyphs ----------
+  // 5x8 custom characters, copied from desk_pet.ino
+  const CUSTOM = [
+    [0x00,0x0E,0x1F,0x1B,0x1F,0x0E,0x00,0x00], // EYE_OPEN
+    [0x00,0x00,0x00,0x00,0x1F,0x00,0x00,0x00], // EYE_CLOSED
+    [0x00,0x04,0x0A,0x11,0x00,0x00,0x00,0x00], // EYE_HAPPY
+    [0x00,0x00,0x00,0x1F,0x1F,0x0E,0x00,0x00], // EYE_SLEEPY
+    [0x00,0x00,0x00,0x11,0x0E,0x00,0x00,0x00], // MOUTH_SMILE
+    [0x00,0x00,0x00,0x00,0x1F,0x00,0x00,0x00], // MOUTH_FLAT
+    [0x00,0x0A,0x1F,0x1F,0x0E,0x04,0x00,0x00], // HEART
+  ];
+  const [EYE_OPEN, EYE_CLOSED, EYE_HAPPY, EYE_SLEEPY, MOUTH_SMILE, MOUTH_FLAT, HEART] = [0,1,2,3,4,5,6];
+  // HD44780-style 5x7 ROM font, only the characters the sketch prints
+  const FONT = {
+    '0':[0x0E,0x11,0x13,0x15,0x19,0x11,0x0E], '1':[0x04,0x0C,0x04,0x04,0x04,0x04,0x0E],
+    '2':[0x0E,0x11,0x01,0x02,0x04,0x08,0x1F], '3':[0x1F,0x02,0x04,0x02,0x01,0x11,0x0E],
+    '4':[0x02,0x06,0x0A,0x12,0x1F,0x02,0x02], '5':[0x1F,0x10,0x1E,0x01,0x01,0x11,0x0E],
+    '6':[0x06,0x08,0x10,0x1E,0x11,0x11,0x0E], '7':[0x1F,0x01,0x02,0x04,0x08,0x08,0x08],
+    '8':[0x0E,0x11,0x11,0x0E,0x11,0x11,0x0E], '9':[0x0E,0x11,0x11,0x0F,0x01,0x02,0x0C],
+    ':':[0x00,0x0C,0x0C,0x00,0x0C,0x0C,0x00], '(':[0x02,0x04,0x08,0x08,0x08,0x04,0x02],
+    ')':[0x08,0x04,0x02,0x02,0x02,0x04,0x08], '?':[0x0E,0x11,0x01,0x02,0x04,0x00,0x04],
+    '!':[0x04,0x04,0x04,0x04,0x00,0x00,0x04], '.':[0x00,0x00,0x00,0x00,0x00,0x0C,0x0C],
+    'a':[0x00,0x00,0x0E,0x01,0x0F,0x11,0x0F], 'b':[0x10,0x10,0x16,0x19,0x11,0x11,0x1E],
+    'c':[0x00,0x00,0x0E,0x10,0x10,0x11,0x0E], 'd':[0x01,0x01,0x0D,0x13,0x11,0x11,0x0F],
+    'e':[0x00,0x00,0x0E,0x11,0x1F,0x10,0x0E], 'f':[0x06,0x09,0x08,0x1C,0x08,0x08,0x08],
+    'i':[0x04,0x00,0x0C,0x04,0x04,0x04,0x0E], 'k':[0x10,0x10,0x12,0x14,0x18,0x14,0x12],
+    'm':[0x00,0x00,0x1A,0x15,0x15,0x11,0x11], 'o':[0x00,0x00,0x0E,0x11,0x11,0x11,0x0E],
+    'p':[0x00,0x00,0x1E,0x11,0x1E,0x10,0x10], 'r':[0x00,0x00,0x16,0x19,0x10,0x10,0x10],
+    's':[0x00,0x00,0x0E,0x10,0x0E,0x01,0x1E], 't':[0x08,0x08,0x1C,0x08,0x08,0x09,0x06],
+    'u':[0x00,0x00,0x11,0x11,0x11,0x13,0x0D], 'x':[0x00,0x00,0x11,0x0A,0x04,0x0A,0x11],
+    'y':[0x00,0x00,0x11,0x11,0x0F,0x01,0x0E], 'z':[0x00,0x00,0x1F,0x02,0x04,0x08,0x1F],
+  };
+
+  // ---------- LCD (16x2) ----------
+  const cells = new Array(32).fill(32);
+  let cx = 0, cy = 0;
+  const lcd = {
+    setCursor(c, r) { cx = c; cy = r; },
+    print(s) { for (const ch of String(s)) this.write(ch.charCodeAt(0)); },
+    write(code) { if (cx < 16) cells[cy * 16 + cx] = code; cx++; },
+  };
+  const canvas = document.getElementById('lcd');
+  const g = canvas.getContext('2d');
+  const UW = 101, UH = 23.4; // layout in dot units
+  function sizeCanvas() {
+    const w = canvas.clientWidth || 600;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(w * dpr * UH / UW);
+    paintLCD();
+  }
+  function glyph(code) {
+    if (code < 8) return CUSTOM[code];
+    const f = FONT[String.fromCharCode(code)];
+    return f ? [...f, 0] : null;
+  }
+  function paintLCD() {
+    const u = canvas.width / UW;
+    g.fillStyle = '#1f43d8';
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    const dot = u * 0.84;
+    for (let r = 0; r < 2; r++) {
+      for (let c = 0; c < 16; c++) {
+        const rows = glyph(cells[r * 16 + c]);
+        const ox = (3 + c * 6) * u, oy = (3 + r * 9.2) * u;
+        for (let y = 0; y < 8; y++) {
+          const bits = rows ? rows[y] : 0;
+          for (let x = 0; x < 5; x++) {
+            const on = (bits >> (4 - x)) & 1;
+            g.fillStyle = on ? '#eef3ff' : 'rgba(120,150,255,0.16)';
+            g.fillRect(ox + x * u, oy + y * u, dot, dot);
+          }
+        }
+      }
+    }
+  }
+  new ResizeObserver(sizeCanvas).observe(canvas);
+
+  // ---------- Time ----------
+  let speed = 1, simBase = 0, realBase = performance.now();
+  const millis = () => simBase + (performance.now() - realBase) * speed;
+  function setSpeed(s) { simBase = millis(); realBase = performance.now(); speed = s; }
+
+  // ---------- State (mirrors the sketch) ----------
+  const READY = 'READY', FOCUS = 'FOCUS', BREAK_TIME = 'BREAK', PAUSED = 'PAUSED';
+  let mode = READY, pausedFrom = FOCUS, focusMin = 25;
+  const BREAK_MIN = 5, SLEEP_AFTER_MS = 60000;
+  let endAt = 0, pausedLeft = 0, lastActivity = 0, sessions = 0;
+
+  // ---------- Beeps + LED ----------
+  let soundOn = false, audio = null, beepsLeft = 0, nextBeep = 0, beepOffAt = 0;
+  const buzzer = document.getElementById('buzzer');
+  function tone() {
+    buzzer.classList.add('on'); beepOffAt = performance.now() + 120;
+    if (!soundOn) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audio.createOscillator(), v = audio.createGain();
+      o.type = 'square'; o.frequency.value = 1760; v.gain.value = 0.04;
+      o.connect(v).connect(audio.destination);
+      o.start(); o.stop(audio.currentTime + 0.12);
+    } catch (e) { /* audio unavailable */ }
+  }
+  function startBeeps(n) { beepsLeft = n; nextBeep = performance.now(); }
+  function handleBeeps() {
+    const now = performance.now();
+    if (beepsLeft && now >= nextBeep) { tone(); beepsLeft--; nextBeep = now + 250; }
+    if (beepOffAt && now >= beepOffAt) { buzzer.classList.remove('on'); beepOffAt = 0; }
+  }
+  const ledEl = document.getElementById('led');
+  let ledKey = '';
+  function setColor(r, gg, b) {
+    const key = r + ',' + gg + ',' + b;
+    if (key === ledKey) return; ledKey = key;
+    const m = Math.max(r, gg, b);
+    if (!m) { ledEl.style.backgroundColor = 'rgba(255,255,255,0.06)'; ledEl.style.boxShadow = 'none'; return; }
+    const k = 255 / m, R = Math.round(r * k), G = Math.round(gg * k), B = Math.round(b * k);
+    const a = Math.min(1, 0.45 + m / 60);
+    ledEl.style.backgroundColor = `rgba(${R},${G},${B},${a})`;
+    ledEl.style.boxShadow = `0 0 18px 6px rgba(${R},${G},${B},${a * 0.55}), 0 0 50px 16px rgba(${R},${G},${B},${a * 0.22})`;
+  }
+
+  function timeLeft() {
+    if (mode === PAUSED) return pausedLeft;
+    if (mode === READY) return focusMin * 60000;
+    const d = endAt - millis();
+    return d > 0 ? d : 0;
+  }
+  function startTimer(m, minutes) { mode = m; endAt = millis() + minutes * 60000; }
+
+  // ---------- Input actions ----------
+  function onShortPress() {
+    lastActivity = millis();
+    if (mode === READY) { startTimer(FOCUS, focusMin); startBeeps(1); }
+    else if (mode === FOCUS || mode === BREAK_TIME) { pausedFrom = mode; pausedLeft = timeLeft(); mode = PAUSED; }
+    else if (mode === PAUSED) { mode = pausedFrom; endAt = millis() + pausedLeft; }
+  }
+  function onLongPress() { lastActivity = millis(); mode = READY; beepsLeft = 0; }
+  let knobAngle = 0;
+  const knobFace = document.getElementById('knobFace');
+  function onTurn(dir) {
+    lastActivity = millis();
+    if (mode === READY) focusMin = Math.min(60, Math.max(1, focusMin + dir));
+    knobAngle += dir * 18;
+    knobFace.style.transform = `rotate(${knobAngle}deg)`;
+  }
+
+  // ---------- Timer + pet logic ----------
+  function handleTimer() {
+    if (mode === FOCUS && timeLeft() === 0) { sessions++; startBeeps(3); startTimer(BREAK_TIME, BREAK_MIN); }
+    else if (mode === BREAK_TIME && timeLeft() === 0) { startBeeps(2); mode = READY; lastActivity = millis(); }
+  }
+  let blinking = false, nextBlink = performance.now() + 3000, blinkEnd = 0;
+  function handleBlink() {
+    const now = performance.now();
+    if (!blinking && now >= nextBlink) { blinking = true; blinkEnd = now + 150; }
+    else if (blinking && now >= blinkEnd) { blinking = false; nextBlink = now + 2500 + Math.random() * 3500; }
+  }
+
+  const modeText = document.getElementById('modeText'), modeDot = document.getElementById('modeDot');
+  const CHIP = { READY: ['ready', '#d9dde3'], SLEEP: ['asleep', '#555e6c'], FOCUS: ['focus', '#2fd36b'], BREAK: ['break', '#3d6bff'], PAUSED: ['paused', '#ffad1f'] };
+  let lastSig = '';
+  function draw() {
+    let eye = EYE_OPEN, mouth = MOUTH_SMILE, status = 'ready?';
+    const asleep = mode === READY && millis() - lastActivity > SLEEP_AFTER_MS;
+    if (mode === READY) {
+      if (asleep) { eye = EYE_SLEEPY; mouth = MOUTH_FLAT; status = 'zzz...'; setColor(0, 0, 0); }
+      else { status = 'ready?'; setColor(20, 20, 20); }
+    } else if (mode === FOCUS) { mouth = MOUTH_FLAT; status = 'focus!'; setColor(0, 40, 0); }
+    else if (mode === BREAK_TIME) { eye = EYE_HAPPY; status = 'break time'; setColor(0, 0, 40); }
+    else { mouth = MOUTH_FLAT; status = 'paused'; setColor(40, 25, 0); }
+    if (blinking && eye === EYE_OPEN) eye = EYE_CLOSED;
+
+    lcd.setCursor(0, 0);
+    lcd.print('('); lcd.write(eye); lcd.write(mouth); lcd.write(eye); lcd.print(') ');
+    lcd.print(status.padEnd(10).slice(0, 10));
+    const secs = Math.floor((timeLeft() + 999) / 1000);
+    const p2 = n => String(n).padStart(2, '0');
+    lcd.setCursor(0, 1);
+    lcd.print(' ' + p2(Math.floor(secs / 60)) + ':' + p2(secs % 60) + '   ');
+    lcd.setCursor(10, 1);
+    lcd.write(HEART);
+    lcd.print(('x' + sessions).padEnd(5).slice(0, 5));
+
+    const sig = cells.join(',');
+    if (sig !== lastSig) {
+      lastSig = sig; paintLCD();
+      canvas.setAttribute('aria-label', 'LCD: ' + status + ', ' + p2(Math.floor(secs / 60)) + ':' + p2(secs % 60) + ', ' + sessions + ' sessions done');
+    }
+    const [t, col] = CHIP[asleep ? 'SLEEP' : mode];
+    if (modeText.textContent !== t) { modeText.textContent = t; modeDot.style.background = col; }
+  }
+
+  // ---------- Knob input ----------
+  const knob = document.getElementById('knob'), holdRing = document.getElementById('holdRing');
+  let holdStart = 0, longFired = false, holding = false;
+  function pressDown() { holding = true; holdStart = performance.now(); longFired = false; }
+  function pressUp() {
+    if (!holding) return;
+    holding = false; holdRing.style.strokeDashoffset = 333;
+    const dt = performance.now() - holdStart;
+    if (!longFired && dt > 30) onShortPress();
+  }
+  function cancelPress() { holding = false; holdRing.style.strokeDashoffset = 333; }
+  function handleHold() {
+    if (!holding) return;
+    const dt = performance.now() - holdStart;
+    holdRing.style.strokeDashoffset = 333 * (1 - Math.min(1, dt / 1000));
+    if (!longFired && dt > 1000) { longFired = true; onLongPress(); }
+  }
+
+  let drag = null;
+  const angleAt = e => { const r = knob.getBoundingClientRect(); return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI; };
+  knob.addEventListener('pointerdown', e => {
+    knob.setPointerCapture(e.pointerId); knob.focus();
+    drag = { last: angleAt(e), acc: 0, total: 0, moved: false }; pressDown();
+  });
+  knob.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const a = angleAt(e); let d = a - drag.last; drag.last = a;
+    if (d > 180) d -= 360; if (d < -180) d += 360;
+    drag.acc += d; drag.total += Math.abs(d);
+    if (!drag.moved && drag.total > 10) { drag.moved = true; cancelPress(); }
+    if (drag.moved) {
+      while (drag.acc >= 18) { onTurn(1); drag.acc -= 18; }
+      while (drag.acc <= -18) { onTurn(-1); drag.acc += 18; }
+    }
+  });
+  const endDrag = () => { if (drag && !drag.moved) pressUp(); else cancelPress(); drag = null; };
+  knob.addEventListener('pointerup', endDrag);
+  knob.addEventListener('pointercancel', () => { cancelPress(); drag = null; });
+  knob.addEventListener('wheel', e => { e.preventDefault(); onTurn(e.deltaY > 0 ? -1 : 1); }, { passive: false });
+  knob.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); onTurn(1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); onTurn(-1); }
+    else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); if (!e.repeat) pressDown(); }
+  });
+  knob.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pressUp(); } });
+  knob.addEventListener('blur', cancelPress);
+
+  document.getElementById('bLeft').onclick = () => onTurn(-1);
+  document.getElementById('bRight').onclick = () => onTurn(1);
+  document.getElementById('bPress').onclick = () => onShortPress();
+  document.getElementById('bHold').onclick = () => onLongPress();
+  document.querySelectorAll('[data-speed]').forEach(b => b.onclick = () => {
+    setSpeed(Number(b.dataset.speed));
+    document.querySelectorAll('[data-speed]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  const soundBtn = document.getElementById('sound');
+  soundBtn.onclick = () => {
+    soundOn = !soundOn;
+    soundBtn.setAttribute('aria-pressed', String(soundOn));
+    soundBtn.textContent = soundOn ? 'Sound on' : 'Sound off';
+    if (soundOn) { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); audio.resume(); } catch (e) {} }
+  };
+
+  // Knurled ridges on the knob
+  const ridges = document.getElementById('ridges');
+  for (let i = 0; i < 30; i++) {
+    const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const a = i * 12 * Math.PI / 180;
+    l.setAttribute('x1', 56 + Math.cos(a) * 36); l.setAttribute('y1', 56 + Math.sin(a) * 36);
+    l.setAttribute('x2', 56 + Math.cos(a) * 43); l.setAttribute('y2', 56 + Math.sin(a) * 43);
+    l.setAttribute('stroke', '#2b3444'); l.setAttribute('stroke-width', '2');
+    ridges.appendChild(l);
+  }
+
+  // ---------- Loop ----------
+  lastActivity = millis();
+  sizeCanvas();
+  let lastDraw = 0;
+  (function loop() {
+    handleTimer(); handleBeeps(); handleBlink(); handleHold();
+    const now = performance.now();
+    if (now - lastDraw > 50) { lastDraw = now; draw(); }
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
+
+</html>
