@@ -4,10 +4,9 @@ A tiny desk pet that lives on a 16x2 LCD and keeps you focused. It works as a Po
 
 Built on an Arduino Nano with a rotary encoder, an RGB LED and a buzzer.
 
-<!-- Photos: drop files into images/ and uncomment these lines
-![Desk pet on my desk](images/desk_pet.jpg)
-![Wiring close-up](images/wiring.jpg)
--->
+![Desk pet on a breadboard showing the ready screen, 01:00 and three hearts](images/desk_pet.jpg)
+
+**Try it without hardware:** [`model/index.html`](model/index.html) is an interactive model of the pet that runs the same logic as the sketch. Download it with the `images` folder and open it in a browser. You can turn and press the knob, speed up time to 60×, and hear the beeps.
 
 ## Features
 
